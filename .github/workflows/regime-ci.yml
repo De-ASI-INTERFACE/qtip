@@ -1,0 +1,67 @@
+# =============================================================================
+# OWNER:   Richard Patterson © 2026 — De-ASI-INTERFACE
+# FILE:    .github/workflows/regime-ci.yml
+# PURPOSE: CI for Regime Classifier v2 — lint, test, coverage gate
+# =============================================================================
+
+name: Regime Classifier CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'qtip/**'
+      - 'tests/**'
+      - 'requirements.txt'
+      - '.github/workflows/regime-ci.yml'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Lint, Test & Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install flake8 bandit
+
+      - name: Lint
+        run: flake8 qtip/ tests/ --max-line-length=100 --ignore=E501
+
+      - name: Security scan
+        run: bandit -r qtip/ -ll -q || true
+
+      - name: Run tests with coverage
+        run: |
+          pytest tests/test_regime_classifier_v2.py \
+            -v --tb=short \
+            --cov=qtip \
+            --cov-report=term-missing \
+            --cov-fail-under=90
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: regime-coverage
+          path: .coverage
+          retention-days: 30
