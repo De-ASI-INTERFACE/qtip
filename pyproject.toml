@@ -1,0 +1,78 @@
+# =============================================================================
+# OWNER:   Richard Patterson © 2026 — De-ASI-INTERFACE
+# FILE:    pyproject.toml
+# PURPOSE: Package + pytest config for qtip — Regime Classifier v2
+# =============================================================================
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qtip"
+version = "2.0.0"
+description = "Regime Classifier v2 — HMM-based market state transitions for quantitative trading"
+authors = [
+    { name = "Richard Patterson", email = "xyq4r5ndd9@privaterelay.appleid.com" }
+]
+license = { text = "Proprietary" }
+readme = "README.md"
+requires-python = ">=3.11"
+keywords = ["regime", "classifier", "hmm", "trading", "quant", "market-state"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: Other/Proprietary License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "hmmlearn>=0.3.0",
+    "numpy>=1.26.0",
+    "scipy>=1.12.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=5.0.0",
+    "flake8>=7.0.0",
+    "bandit>=1.7.0",
+]
+
+[project.urls]
+Repository = "https://github.com/De-ASI-INTERFACE/qtip"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["qtip", "qtip.*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--tb=short",
+    "--cov=qtip",
+    "--cov-report=term-missing",
+    "--cov-fail-under=90",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+
+[tool.coverage.run]
+source = ["qtip"]
+branch = true

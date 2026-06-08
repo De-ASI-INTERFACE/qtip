@@ -1,87 +1,136 @@
-<!--
-  OWNERSHIP: Richard Patterson (Entrepreneur & Trader, Akron, OH)
-  PROJECT: QTIP — Quantum Trading Intelligence Platform
-  COPYRIGHT: © 2026 Richard Patterson. All Rights Reserved.
-  LICENSE: Apache-2.0
--->
+# QTIP — Quantitative Trading Intelligence Platform
 
-# QTIP — Quantum Trading Intelligence Platform
-
-> **© 2026 Richard Patterson. All Rights Reserved.**  
-> Quantum-inspired trading intelligence infrastructure — De-ASI-INTERFACE
-
-![Python](https://img.shields.io/badge/Python-3.12-blue)
-![Solana](https://img.shields.io/badge/Solana-Mainnet-purple)
-![License](https://img.shields.io/badge/License-Apache%202.0-green)
-![Status](https://img.shields.io/badge/Status-Active%20Development-yellow)
-
-QTIP is the foundational intelligence platform underpinning the De-ASI-INTERFACE quantitative trading ecosystem. It provides the core signal processing, regime classification, and probability-weighting infrastructure that feeds into the broader QTI and TBS bot series.
+> **Owner**: Richard Patterson © 2026 — De-ASI-INTERFACE
+> **Version**: 2.0.0 | **Status**: Production-Hardened & Fully Tested
 
 ---
 
-## What QTIP Does
+## Regime Classifier v2
 
-QTIP sits between raw market data and execution decisions. It ingests multi-source market signals, applies quantum-inspired amplitude scoring to weight competing hypotheses, and outputs a consensus signal vector that downstream bots use for position entry, sizing, and exit timing.
+Hidden Markov Model (HMM)-based market regime classifier that labels price action into four states:
 
----
-
-## Architecture
-
-```
-QTIP Intelligence Layer
-  ├── Signal Ingestion       — Multi-source market data normalization
-  ├── Amplitude Scorer       — Quantum-inspired probability weighting
-  ├── Regime Classifier      — Market state detection (trend/revert/volatile)
-  ├── Consensus Engine       — Weighted signal aggregation
-  └── Output Interface       — Signal vector for QTI, TBS, and trading-bot consumption
-```
-
----
-
-## Ecosystem Position
-
-| System | Role | Consumes QTIP |
-|---|---|---|
-| `qti-quantitative-bot` | Quantitative execution bot | ✓ |
-| `tbs-options-trading-system` | Options 100-bot series | ✓ |
-| `trading-bot` | HFT Solana + CEX bot | ✓ |
-| `solana-execution` | On-chain execution module | ✓ |
-
----
-
-## Tech Stack
-
-| Layer | Technology |
+| Regime | Description |
 |---|---|
-| Language | Python 3.12 |
-| Signal State | Redis (TTL-gated caching) |
-| Metrics | Prometheus |
-| CI/CD | GitHub Actions |
-| License | Apache 2.0 |
+| `BULL_TREND` | Positive drift, low-moderate vol |
+| `BEAR_TREND` | Negative drift, low-moderate vol |
+| `RANGING` | Near-zero drift, low vol |
+| `HIGH_VOL_BREAKOUT` | Any drift, high vol |
 
 ---
 
 ## Quick Start
 
 ```bash
-git clone https://github.com/De-ASI-INTERFACE/qtip
+# 1. Clone
+git clone https://github.com/De-ASI-INTERFACE/qtip.git
 cd qtip
-cp .env.example .env
-pip install -r requirements.txt
-python main.py
+
+# 2. Install in editable mode
+pip install -e .
+
+# 3. Install dev deps
+pip install -e ".[dev]"
+
+# 4. Run full test suite with 90% coverage gate
+pytest
 ```
+
+---
+
+## Usage
+
+```python
+import numpy as np
+from qtip import RegimeClassifierV2, Regime
+
+# Fit on historical close prices
+prices = np.array([...])  # numpy array of close prices
+clf = RegimeClassifierV2()
+clf.fit(prices)
+
+# Predict regime per bar
+regimes = clf.predict(prices)
+
+# Current regime
+current = clf.current_regime(prices)
+print(current)  # Regime.BULL_TREND
+
+# Posterior probabilities for latest bar
+probs = clf.current_proba(prices)
+# {'BULL_TREND': 0.821, 'BEAR_TREND': 0.04, 'RANGING': 0.11, 'HIGH_VOL_BREAKOUT': 0.029}
+
+# HMM transition matrix
+tm = clf.transition_matrix()
+
+# Log-likelihood score
+ll = clf.log_likelihood(prices)
+```
+
+---
+
+## Architecture
+
+```
+qtip/
+├── __init__.py
+└── regime_classifier_v2.py
+    ├── Regime (enum)
+    ├── RegimeConfig (dataclass)
+    ├── build_feature_matrix()
+    └── RegimeClassifierV2
+        ├── .fit(prices)
+        ├── .predict(prices)
+        ├── .predict_proba(prices)
+        ├── .current_regime(prices)
+        ├── .current_proba(prices)
+        ├── .transition_matrix()
+        └── .log_likelihood(prices)
+
+tests/
+└── test_regime_classifier_v2.py   # 35 tests, 90%+ coverage gate
+
+.github/workflows/
+└── regime-ci.yml                  # lint → bandit → pytest
+
+pyproject.toml                     # editable install + pytest config
+```
+
+---
+
+## Features
+
+- 4-state Gaussian HMM with configurable covariance (`full` / `diag` / `tied` / `spherical`)
+- Automatic regime labelling by mean return + vol signature — no manual state assignment
+- Z-scored feature matrix: log returns, realised vol, momentum (ROC), trend strength
+- Posterior state probabilities per bar
+- Full transition matrix with regime labels
+- Log-likelihood scoring for model comparison
+- 90%+ branch coverage enforced in CI
+
+---
+
+## Dependencies
+
+| Package | Min Version | Purpose |
+|---|---|---|
+| `hmmlearn` | 0.3.0 | Gaussian HMM engine |
+| `numpy` | 1.26.0 | Feature computation |
+| `scipy` | 1.12.0 | Z-score normalisation |
+| `pytest` | 8.0.0 | Test runner (dev) |
+| `pytest-cov` | 5.0.0 | Coverage gate (dev) |
 
 ---
 
 ## Roadmap
 
+- [x] Regime Classifier v2 (HMM-based state transitions)
 - [ ] Full signal ingestion pipeline (Binance, Solana, on-chain)
-- [ ] Regime classifier v2 (HMM-based state transitions)
 - [ ] Amplitude scorer with backtested weight calibration
 - [ ] REST API output interface for downstream bot consumption
 - [ ] Docker Compose deployment with Prometheus integration
 
 ---
 
-*© 2026 Richard Patterson. All Rights Reserved.*  
-*Built in Akron, Ohio. Core intelligence layer of the De-ASI-INTERFACE ecosystem.*
+## License
+
+Proprietary — Richard Patterson © 2026. All rights reserved.
