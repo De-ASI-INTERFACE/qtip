@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <AssemblyName>QTIP.RegimeClassifier</AssemblyName>
+    <RootNamespace>QTIP.RegimeClassifier</RootNamespace>
+    <Version>2.0.0</Version>
+    <Authors>Richard Patterson</Authors>
+    <Company>De-ASI-INTERFACE</Company>
+    <Description>Regime Classifier v2 — HMM-based market state transitions</Description>
+    <Copyright>Copyright © 2026 Richard Patterson. Proprietary.</Copyright>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+
+</Project>

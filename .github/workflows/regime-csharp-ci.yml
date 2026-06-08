@@ -1,0 +1,62 @@
+# =============================================================================
+# OWNER:   Richard Patterson © 2026 — De-ASI-INTERFACE
+# FILE:    .github/workflows/regime-csharp-ci.yml
+# PURPOSE: CI for C# Regime Classifier v2 — build, test, coverage
+# =============================================================================
+
+name: Regime Classifier C# CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'tests/csharp/**'
+      - 'QTIP.sln'
+      - '.github/workflows/regime-csharp-ci.yml'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    name: Build, Test & Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
+        run: dotnet restore QTIP.sln
+
+      - name: Build (Release)
+        run: dotnet build QTIP.sln --configuration Release --no-restore
+
+      - name: Run tests with coverage
+        run: |
+          dotnet test QTIP.sln \
+            --configuration Release \
+            --no-build \
+            --verbosity normal \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./coverage
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: csharp-coverage
+          path: ./coverage
+          retention-days: 30
